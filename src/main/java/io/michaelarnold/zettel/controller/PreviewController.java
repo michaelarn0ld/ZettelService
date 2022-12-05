@@ -1,5 +1,12 @@
 package io.michaelarnold.zettel.controller;
 
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -7,14 +14,36 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 @RestController
 @RequestMapping("/preview")
 @Log4j2
 public class PreviewController {
 
     @GetMapping
-    public ResponseEntity<?> getPreviews() {
+    public ResponseEntity<?> getPreviews() throws IOException {
         log.info("Getting zettel previews");
-        return new ResponseEntity<>(HttpStatus.OK);
+        AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
+                .withRegion(Regions.US_WEST_1)
+                .withCredentials(new ProfileCredentialsProvider())
+                .build();
+        log.info("Downloading an S3 object");
+        String bucketName = "zettel-tag-mappings";
+        String key = "MAPPINGS.json";
+        S3Object object = s3Client.getObject(new GetObjectRequest(bucketName, key));
+        displayTextInputStream(object.getObjectContent());
+        return null;
+    }
+
+    private void displayTextInputStream(InputStream inputStream) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            log.info(line);
+        }
     }
 }

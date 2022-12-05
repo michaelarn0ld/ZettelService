@@ -10,6 +10,7 @@
   <url>http://maven.apache.org</url>
 
   <properties>
+    <aws.java.sdk.version>2.16.1</aws.java.sdk.version>
     <maven.compiler.source>17</maven.compiler.source>
   </properties>
 
@@ -18,6 +19,18 @@
     <version>2.6.3</version>
     <groupId>org.springframework.boot</groupId>
   </parent>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>software.amazon.awssdk</groupId>
+        <artifactId>bom</artifactId>
+        <version>2.16.1</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <!-- Spring MVC -->
@@ -64,5 +77,13 @@
         </exclusion>
       </exclusions>
     </dependency>
+
+    <!-- AWS S3 -->
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-s3</artifactId>
+      <version>1.12.351</version>
+    </dependency>
+
   </dependencies>
 </project>
