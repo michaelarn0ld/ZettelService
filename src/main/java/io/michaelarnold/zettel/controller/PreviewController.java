@@ -7,7 +7,10 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import io.michaelarnold.zettel.domain.PreviewService;
+import io.michaelarnold.zettel.model.Preview;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,14 +21,17 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
 
 @RestController
-@RequestMapping("/preview")
 @Log4j2
 public class PreviewController {
 
-    @GetMapping
-    public ResponseEntity<?> getPreviews() throws IOException {
+    @Autowired
+    PreviewService service;
+
+    @GetMapping("/preview")
+    public ResponseEntity<?> getAllPreviews() throws IOException {
         log.info("Getting zettel previews");
         AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
                 .withRegion(Regions.US_WEST_1)
@@ -37,6 +43,12 @@ public class PreviewController {
         S3Object object = s3Client.getObject(new GetObjectRequest(bucketName, key));
         displayTextInputStream(object.getObjectContent());
         return null;
+    }
+
+    @GetMapping("/previews")
+    public ResponseEntity<?> getPreviews() {
+        List<Preview> previews = service.getPreviews();
+        return new ResponseEntity<>(previews, HttpStatus.OK);
     }
 
     private void displayTextInputStream(InputStream inputStream) throws IOException {

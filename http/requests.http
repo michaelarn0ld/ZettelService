@@ -2,5 +2,5 @@
 
 ###
 # SHOULD GET THE ZETTEL MAPPINGS PREVIEW
-GET {{host}}/preview
+GET {{host}}/previews
 Content-Type: application/json
