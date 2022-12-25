@@ -1,28 +1,39 @@
 package io.michaelarnold.zettel.data;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
+import io.michaelarnold.zettel.config.ApplicationConfiguration;
 import io.michaelarnold.zettel.model.Preview;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.List;
 
 @Repository
 @Log4j2
 public class PreviewS3Repository implements PreviewRepository {
 
+    @Autowired
+    private AmazonS3 amazonS3;
+
     @Override
     public List<Preview> getPreviews() {
-//        Preview preview = Preview.builder()
-//                .id(1)
-//                .zetId("FOO")
-//                .attributes(List.of("bar", "barfoo"))
-//                .content("This is the content")
-//                .build();
-//        return List.of(preview);
-        Preview preview = Preview.builder().build();
-        List<Preview> list = new ArrayList<>();
-        list.add(preview);
-        return list;
+        S3Object s3Object = amazonS3.getObject(
+                new GetObjectRequest(ApplicationConfiguration.BUCKET, ApplicationConfiguration.KEY));
+        // TODO: get the "tags" attribute of the original and make a List<JsonObj> so that we can perform the transform operations
+        return null;
+    }
+    private void displayTextInputStream(InputStream inputStream) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            log.info(line);
+        }
     }
 }
