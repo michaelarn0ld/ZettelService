@@ -61,6 +61,15 @@ public class PreviewS3Repository implements PreviewRepository {
         }
         return new ArrayList<>(previewMap.values());
     }
+
+    @Override
+    public List<String> getWhitelist() {
+        // TODO: Implement whitelist for zettels in zet client and in zettel service
+        List<String> foo = new ArrayList<>();
+        foo.add("202201310501");
+        return foo;
+    }
+
     private String convertS3ToString(InputStream inputStream) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         StringBuilder jsonContent = new StringBuilder();

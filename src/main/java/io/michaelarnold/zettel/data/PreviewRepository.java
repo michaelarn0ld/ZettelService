@@ -7,4 +7,6 @@ import java.util.List;
 public interface PreviewRepository {
 
     List<Preview> getPreviews();
+
+    List<String> getWhitelist();
 }
