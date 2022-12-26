@@ -85,5 +85,11 @@
       <version>1.12.351</version>
     </dependency>
 
+    <!-- Google JSON -->
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+    </dependency>
+
   </dependencies>
 </project>
