@@ -1,7 +1,6 @@
 package io.michaelarnold.zettel.config;
 
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
@@ -18,7 +17,8 @@ public class ApplicationConfiguration {
     public static final String WHITELIST_PRIMARY_KEY_NAME = "whitelist";
     public static final String WHITELIST_PRIMARY_KEY_VALUE = "PRIMARY";
     public static final String WHITELIST_TABLE_NAME = "ZettelWhitelist";
-    public static final String WHITELIST_VALUES = "values";
+    public static final String WHITELIST_VALUES = "zettelValues";
+    public static final String PREVIEWS_ENDPOINT = "/previews";
     private static final Regions REGION = Regions.US_WEST_1;
     private static final ProfileCredentialsProvider CREDENTIALS = new ProfileCredentialsProvider();
 
