@@ -1,5 +1,8 @@
 package io.michaelarnold.zettel.data;
 
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
@@ -20,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 @Log4j2
@@ -31,6 +35,9 @@ public class PreviewS3Repository implements PreviewRepository {
 
     @Autowired
     private AmazonS3 amazonS3;
+
+    @Autowired
+    private AmazonDynamoDB amazonDynamoDB;
 
     @Override
     public List<Preview> getPreviews() {
@@ -64,10 +71,17 @@ public class PreviewS3Repository implements PreviewRepository {
 
     @Override
     public List<String> getWhitelist() {
-        // TODO: Implement whitelist for zettels in zet client and in zettel service
-        List<String> foo = new ArrayList<>();
-        foo.add("202201310501");
-        return foo;
+        Map<String, AttributeValue> key = new HashMap<>();
+        key.put(ApplicationConfiguration.WHITELIST_PRIMARY_KEY_NAME,
+                new AttributeValue(ApplicationConfiguration.WHITELIST_PRIMARY_KEY_VALUE));
+        GetItemRequest request = new GetItemRequest()
+                .withKey(key)
+                .withTableName(ApplicationConfiguration.WHITELIST_TABLE_NAME);
+        Map<String, AttributeValue> result = amazonDynamoDB.getItem(request).getItem();
+        AttributeValue whitelistAttribute = result.get(ApplicationConfiguration.WHITELIST_VALUES);
+        return whitelistAttribute.getL().stream()
+                .map(AttributeValue::getS)
+                .collect(Collectors.toList());
     }
 
     private String convertS3ToString(InputStream inputStream) throws IOException {
