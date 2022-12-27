@@ -18,10 +18,13 @@ public class PreviewService {
 
     public List<Preview> getPreviews() {
         List<String> whitelist = repository.getWhitelist();
+        log.info("Zettel whitelist: " + whitelist);
         int[] idArr = {0};
         List<Preview> previews = repository.getPreviews().stream()
                .filter(p -> whitelist.contains(p.getZetId()))
                .collect(Collectors.toList());
+        log.info("Zettel previews size after filtering with whitelist: " +  previews.size());
+        log.info("Example preview: " + previews.get(0));
         previews.forEach(p -> p.setId(++idArr[0]));
         return previews;
     }

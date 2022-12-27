@@ -8,6 +8,7 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.google.gson.Gson;
 import io.michaelarnold.zettel.config.ApplicationConfiguration;
+import io.michaelarnold.zettel.exceptions.PreviewAWSFetchingException;
 import io.michaelarnold.zettel.model.Mappings;
 import io.michaelarnold.zettel.model.Preview;
 import io.michaelarnold.zettel.model.Tag;
@@ -41,13 +42,15 @@ public class PreviewS3Repository implements PreviewRepository {
 
     @Override
     public List<Preview> getPreviews() {
-        S3Object s3Object = amazonS3.getObject(
-                new GetObjectRequest(ApplicationConfiguration.BUCKET, ApplicationConfiguration.KEY));
+        log.info("About to get MAPPINGS.json from Amazon S3");
         String jsonContent = null;
         try {
+            S3Object s3Object = amazonS3.getObject(
+                    new GetObjectRequest(ApplicationConfiguration.BUCKET, ApplicationConfiguration.KEY));
             jsonContent = convertS3ToString(s3Object.getObjectContent());
         } catch (Exception e) {
-            // TODO: Handle exception
+            log.error("Error retrieving and/or parsing MAPPINGS.json from Amazon S3 with: " + e.getMessage());
+            throw new PreviewAWSFetchingException(e.getMessage());
         }
         Gson gson = new Gson();
         Mappings mappings = gson.fromJson(jsonContent, Mappings.class);
@@ -66,19 +69,28 @@ public class PreviewS3Repository implements PreviewRepository {
                 previewMap.get(zettel.getZettel_id()).getAttributes().add(tag.getTag());
             });
         }
+        log.info("Successfully fetched and parsed MAPPINGS.json from Amazon S3");
         return new ArrayList<>(previewMap.values());
     }
 
     @Override
     public List<String> getWhitelist() {
+        log.info("About to fetch zettel whitelist from Amazon DynamoDB");
         Map<String, AttributeValue> key = new HashMap<>();
         key.put(ApplicationConfiguration.WHITELIST_PRIMARY_KEY_NAME,
                 new AttributeValue(ApplicationConfiguration.WHITELIST_PRIMARY_KEY_VALUE));
         GetItemRequest request = new GetItemRequest()
                 .withKey(key)
                 .withTableName(ApplicationConfiguration.WHITELIST_TABLE_NAME);
-        Map<String, AttributeValue> result = amazonDynamoDB.getItem(request).getItem();
-        AttributeValue whitelistAttribute = result.get(ApplicationConfiguration.WHITELIST_VALUES);
+        AttributeValue whitelistAttribute = null;
+        try {
+            Map<String, AttributeValue> result = amazonDynamoDB.getItem(request).getItem();
+            whitelistAttribute = result.get(ApplicationConfiguration.WHITELIST_VALUES);
+        } catch (Exception e) {
+            log.error("Error fetching whitelist from DynamoDB with: " + e.getMessage());
+            throw new PreviewAWSFetchingException(e.getMessage());
+        }
+        log.info("Successfully fetched zettel whitelist from Amazon DynamoDB");
         return whitelistAttribute.getL().stream()
                 .map(AttributeValue::getS)
                 .collect(Collectors.toList());
