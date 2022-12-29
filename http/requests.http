@@ -1,4 +1,4 @@
-@host=http://localhost:8080
+@host=http://ec2-54-176-135-148.us-west-1.compute.amazonaws.com:8080
 
 ###
 # SHOULD GET THE ZETTEL MAPPINGS PREVIEW
