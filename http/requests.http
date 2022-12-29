@@ -1,6 +1,0 @@
-@host=http://localhost:8080
-
-###
-# SHOULD GET THE ZETTEL MAPPINGS PREVIEW
-GET {{host}}/previews
-Content-Type: application/json
