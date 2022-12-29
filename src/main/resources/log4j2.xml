@@ -9,7 +9,7 @@
         <Console name="ConsoleAppender" target="SYSTEM_OUT" follow="true">
             <PatternLayout pattern="${LOG_PATTERN}"/>
         </Console>l
-        <RollingFile name="FileAppender" fileName="/home/ec2-user/log/zettel-service/logsapplication.log"
+        <RollingFile name="FileAppender" fileName="/home/ec2-user/log/zettel-service/logs/application.log"
                      filePattern="/home/ec2-user/log/zettel-service/logs/application-%d{yyyy-MM-dd}-%i.log">
             <PatternLayout>
                 <Pattern>${LOG_PATTERN}</Pattern>
