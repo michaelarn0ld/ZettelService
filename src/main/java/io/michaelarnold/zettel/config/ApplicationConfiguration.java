@@ -6,6 +6,8 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagement;
+import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagementClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,6 +21,7 @@ public class ApplicationConfiguration {
     public static final String WHITELIST_TABLE_NAME = "ZettelWhitelist";
     public static final String WHITELIST_VALUES = "zettelValues";
     public static final String PREVIEWS_ENDPOINT = "/previews";
+    public static final String SSM_GIT_HEAD = "git_head";
     private static final Regions REGION = Regions.US_WEST_1;
     private static final ProfileCredentialsProvider CREDENTIALS = new ProfileCredentialsProvider();
 
@@ -33,6 +36,14 @@ public class ApplicationConfiguration {
     @Bean
     public AmazonDynamoDB initializeAmazonDynamoDB() {
         return AmazonDynamoDBClientBuilder.standard()
+                .withRegion(REGION)
+                .withCredentials(CREDENTIALS)
+                .build();
+    }
+
+    @Bean
+    public AWSSimpleSystemsManagement initializeAmazonSSM() {
+        return AWSSimpleSystemsManagementClient.builder()
                 .withRegion(REGION)
                 .withCredentials(CREDENTIALS)
                 .build();

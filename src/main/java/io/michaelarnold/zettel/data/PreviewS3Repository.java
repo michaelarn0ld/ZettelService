@@ -6,6 +6,9 @@ import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagement;
+import com.amazonaws.services.simplesystemsmanagement.model.GetParameterRequest;
+import com.amazonaws.services.simplesystemsmanagement.model.GetParameterResult;
 import com.google.gson.Gson;
 import io.michaelarnold.zettel.config.ApplicationConfiguration;
 import io.michaelarnold.zettel.exceptions.PreviewAWSFetchingException;
@@ -26,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static io.michaelarnold.zettel.config.ApplicationConfiguration.SSM_GIT_HEAD;
+
 @Repository
 @Log4j2
 public class PreviewS3Repository implements PreviewRepository {
@@ -33,6 +38,8 @@ public class PreviewS3Repository implements PreviewRepository {
     private static final String ZETTEL_PREFIX = "STARTTITLE_";
     private static final String ZETTEL_SUFFIX = "_ENDTITLE";
     private static final String ZETTEL_TITLE_CONVENTION = "# ";
+    private List<Preview> previews;
+    private Mappings mappings;
 
     @Autowired
     private AmazonS3 amazonS3;
@@ -40,8 +47,15 @@ public class PreviewS3Repository implements PreviewRepository {
     @Autowired
     private AmazonDynamoDB amazonDynamoDB;
 
+    @Autowired
+    private AWSSimpleSystemsManagement amazonSSM;
+
     @Override
     public List<Preview> getPreviews() {
+        if (mappings != null && previews != null && isMostCurrentMapping(mappings)) {
+            log.info("No change in Zettelkasten git head; using cached MAPPINGS");
+            return previews;
+        }
         log.info("About to get MAPPINGS.json from Amazon S3");
         String jsonContent = null;
         try {
@@ -53,7 +67,7 @@ public class PreviewS3Repository implements PreviewRepository {
             throw new PreviewAWSFetchingException(e.getMessage());
         }
         Gson gson = new Gson();
-        Mappings mappings = gson.fromJson(jsonContent, Mappings.class);
+        mappings = gson.fromJson(jsonContent, Mappings.class);
         Map<String, Preview> previewMap = new HashMap<>();
         for (Tag tag: mappings.getTags()) {
             tag.getZettels().forEach(zettel -> {
@@ -70,7 +84,8 @@ public class PreviewS3Repository implements PreviewRepository {
             });
         }
         log.info("Successfully fetched and parsed MAPPINGS.json from Amazon S3");
-        return new ArrayList<>(previewMap.values());
+        previews = new ArrayList<>(previewMap.values());
+        return previews;
     }
 
     @Override
@@ -110,5 +125,25 @@ public class PreviewS3Repository implements PreviewRepository {
        return zettelTitle.replace(ZETTEL_PREFIX, "")
                .replace(ZETTEL_SUFFIX, "")
                .replace(ZETTEL_TITLE_CONVENTION, "");
+    }
+
+    private boolean isMostCurrentMapping(Mappings mappings) {
+        String latestGitHead = fetchGitHead();
+        log.info(String.format("Cached mappings is at commit: %s; latest commit is: %s",
+                mappings.getGit_head(), latestGitHead));
+        return mappings.getGit_head().equals(latestGitHead);
+    }
+
+    private String fetchGitHead() {
+        String result = null;
+        try {
+            GetParameterRequest request = new GetParameterRequest().withName(SSM_GIT_HEAD);
+            GetParameterResult response = amazonSSM.getParameter(request);
+            result = response.getParameter().getValue();
+        } catch (Exception e) {
+            // If there is a failure to fetch from SSM, then we will go ahead an ask S3 for the MAPPINGS object
+            log.error("Failure to query SSM; proceeding to fetch MAPPINGS.json from S3");
+        }
+        return result;
     }
 }

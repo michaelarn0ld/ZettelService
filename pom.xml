@@ -80,6 +80,13 @@
       <version>1.12.351</version>
     </dependency>
 
+    <!-- AWS SSM -->
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-ssm</artifactId>
+      <version>1.12.351</version>
+    </dependency>
+
     <!-- Google JSON -->
     <dependency>
       <groupId>com.google.code.gson</groupId>
