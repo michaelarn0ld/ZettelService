@@ -1,6 +1,7 @@
 package io.michaelarnold.zettel.domain;
 
 import io.michaelarnold.zettel.data.PreviewRepository;
+import io.michaelarnold.zettel.data.RepositoryUtils;
 import io.michaelarnold.zettel.model.Preview;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +17,11 @@ public class PreviewService {
     @Autowired
     private PreviewRepository repository;
 
+    @Autowired
+    private RepositoryUtils repositoryUtils;
+
     public List<Preview> getPreviews() {
-        List<String> whitelist = repository.getWhitelist();
+        List<String> whitelist = repositoryUtils.getWhitelist();
         log.info("Zettel whitelist: " + whitelist);
         int[] idArr = {0};
         List<Preview> previews = repository.getPreviews().stream()

@@ -8,22 +8,29 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagement;
 import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagementClient;
+import io.michaelarnold.zettel.data.RepositoryUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ApplicationConfiguration {
 
-    public static final String BUCKET = "zettel-tag-mappings";
-    public static final String KEY = "MAPPINGS.json";
+    public static final String MAPPINGS_BUCKET = "zettel-tag-mappings";
+    public static final String MAPPINGS_KEY = "MAPPINGS.json";
+    public static final String ZETTEL_BUCKET = "zettels-repository";
     public static final String WHITELIST_PRIMARY_KEY_NAME = "whitelist";
     public static final String WHITELIST_PRIMARY_KEY_VALUE = "PRIMARY";
     public static final String WHITELIST_TABLE_NAME = "ZettelWhitelist";
     public static final String WHITELIST_VALUES = "zettelValues";
     public static final String PREVIEWS_ENDPOINT = "/previews";
+    public static final String ZETTEL_FILE_ENDPOINT="/zettels/{zettelId}";
     public static final String SSM_GIT_HEAD = "git_head";
     private static final Regions REGION = Regions.US_WEST_1;
     private static final ProfileCredentialsProvider CREDENTIALS = new ProfileCredentialsProvider();
+
+    public static String zettelKey(String zettelId) {
+        return zettelId + ".md";
+    }
 
     @Bean
     public AmazonS3 inititializeAmazonS3() {
@@ -49,5 +56,9 @@ public class ApplicationConfiguration {
                 .build();
     }
 
+    @Bean
+    public RepositoryUtils initializeRepositoryUtils() {
+        return new RepositoryUtils();
+    }
 
 }

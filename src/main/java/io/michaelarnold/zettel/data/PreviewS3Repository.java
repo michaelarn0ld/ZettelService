@@ -1,8 +1,6 @@
 package io.michaelarnold.zettel.data;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
@@ -19,17 +17,11 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import static io.michaelarnold.zettel.config.ApplicationConfiguration.SSM_GIT_HEAD;
 
 @Repository
 @Log4j2
@@ -45,9 +37,6 @@ public class PreviewS3Repository implements PreviewRepository {
     private AmazonS3 amazonS3;
 
     @Autowired
-    private AmazonDynamoDB amazonDynamoDB;
-
-    @Autowired
     private AWSSimpleSystemsManagement amazonSSM;
 
     @Override
@@ -60,8 +49,8 @@ public class PreviewS3Repository implements PreviewRepository {
         String jsonContent = null;
         try {
             S3Object s3Object = amazonS3.getObject(
-                    new GetObjectRequest(ApplicationConfiguration.BUCKET, ApplicationConfiguration.KEY));
-            jsonContent = convertS3ToString(s3Object.getObjectContent());
+                    new GetObjectRequest(ApplicationConfiguration.MAPPINGS_BUCKET, ApplicationConfiguration.MAPPINGS_KEY));
+            jsonContent = RepositoryUtils.convertS3ToString(s3Object.getObjectContent());
         } catch (Exception e) {
             log.error("Error retrieving and/or parsing MAPPINGS.json from Amazon S3 with: " + e.getMessage());
             throw new PreviewAWSFetchingException(e.getMessage());
@@ -88,38 +77,6 @@ public class PreviewS3Repository implements PreviewRepository {
         return previews;
     }
 
-    @Override
-    public List<String> getWhitelist() {
-        log.info("About to fetch zettel whitelist from Amazon DynamoDB");
-        Map<String, AttributeValue> key = new HashMap<>();
-        key.put(ApplicationConfiguration.WHITELIST_PRIMARY_KEY_NAME,
-                new AttributeValue(ApplicationConfiguration.WHITELIST_PRIMARY_KEY_VALUE));
-        GetItemRequest request = new GetItemRequest()
-                .withKey(key)
-                .withTableName(ApplicationConfiguration.WHITELIST_TABLE_NAME);
-        AttributeValue whitelistAttribute = null;
-        try {
-            Map<String, AttributeValue> result = amazonDynamoDB.getItem(request).getItem();
-            whitelistAttribute = result.get(ApplicationConfiguration.WHITELIST_VALUES);
-        } catch (Exception e) {
-            log.error("Error fetching whitelist from DynamoDB with: " + e.getMessage());
-            throw new PreviewAWSFetchingException(e.getMessage());
-        }
-        log.info("Successfully fetched zettel whitelist from Amazon DynamoDB");
-        return whitelistAttribute.getL().stream()
-                .map(AttributeValue::getS)
-                .collect(Collectors.toList());
-    }
-
-    private String convertS3ToString(InputStream inputStream) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        StringBuilder jsonContent = new StringBuilder();
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-            jsonContent.append(line);
-        }
-        return jsonContent.toString();
-    }
 
     private String parseZettelTitle(String zettelTitle) {
        return zettelTitle.replace(ZETTEL_PREFIX, "")
@@ -137,7 +94,7 @@ public class PreviewS3Repository implements PreviewRepository {
     private String fetchGitHead() {
         String result = null;
         try {
-            GetParameterRequest request = new GetParameterRequest().withName(SSM_GIT_HEAD);
+            GetParameterRequest request = new GetParameterRequest().withName(ApplicationConfiguration.SSM_GIT_HEAD);
             GetParameterResult response = amazonSSM.getParameter(request);
             result = response.getParameter().getValue();
         } catch (Exception e) {

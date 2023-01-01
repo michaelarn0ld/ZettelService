@@ -5,8 +5,5 @@ import io.michaelarnold.zettel.model.Preview;
 import java.util.List;
 
 public interface PreviewRepository {
-
     List<Preview> getPreviews();
-
-    List<String> getWhitelist();
 }
