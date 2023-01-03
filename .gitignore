@@ -30,3 +30,9 @@ target/
 
 # macOS
 .DS_Store
+
+# security
+src/main/resources/keystore/
+
+# application properties
+application.properties
