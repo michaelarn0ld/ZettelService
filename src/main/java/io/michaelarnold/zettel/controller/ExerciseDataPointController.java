@@ -54,7 +54,7 @@ public class ExerciseDataPointController {
             log.error("Invalid request submitted");
             return new ResponseEntity<>(result.getMessages(), HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return new ResponseEntity<>(result.getPayload(), HttpStatus.CREATED);
     }
 
 }
