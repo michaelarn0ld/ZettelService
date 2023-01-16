@@ -32,7 +32,6 @@ public class ExerciseDataPointDynamoDbRepository implements ExerciseDataPointRep
         for (Field f: exerciseDataPoint.getClass().getDeclaredFields()) {
             f.setAccessible(true);
             String attributeName = f.getName();
-            log.info("Name: " + attributeName);
             FieldType fieldType;
             Class<?> clazz = f.getType();
             try {
@@ -54,8 +53,13 @@ public class ExerciseDataPointDynamoDbRepository implements ExerciseDataPointRep
                 f.setAccessible(false);
             }
         }
-        amazonDynamoDB.putItem(ApplicationConfiguration.HEALTH_TRACKER_TABLE_NAME, attributeMap);
-        return null;
+        try {
+            amazonDynamoDB.putItem(ApplicationConfiguration.HEALTH_TRACKER_TABLE_NAME, attributeMap);
+        } catch (Exception e) {
+            throw new HealthTrackerInfrastructureException("Failed to add ExerciseDataPoint to DynamoDB: " + exerciseDataPoint);
+        }
+        log.info("Successfully added ExerciseDataPoint to DynamoDB: " + exerciseDataPoint);
+        return exerciseDataPoint;
     }
 
     private enum FieldType {
