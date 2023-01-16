@@ -7,3 +7,8 @@
 * Use `tail -f proc/proc.log` to get a running log from the process; alternatively,
   check out the static logs produced by log4j
 * If you stop the process, please clear the running logs with `rm proc/proc.log`
+
+## Endpoints
+* `POST /exerciseDataPoint?accessPin=<>`
+* `GET /previews`
+* `GET /zettels/{zettelId}`

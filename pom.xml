@@ -93,6 +93,20 @@
       <artifactId>gson</artifactId>
     </dependency>
 
+    <!-- AWS Secrets Manager -->
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-secretsmanager</artifactId>
+      <version>1.12.351</version>
+    </dependency>
+
+    <!-- Simple JSON -->
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20180130</version>
+    </dependency>
+
   </dependencies>
 
   <build>
