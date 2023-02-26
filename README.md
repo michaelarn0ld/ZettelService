@@ -12,3 +12,6 @@
 * `POST /exerciseDataPoint?accessPin=<>`
 * `GET /previews`
 * `GET /zettels/{zettelId}`
+
+## Technologies
+* Using AWS S3, AWS DynamoDB, AWS EC2, AWS SSM
