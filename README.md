@@ -9,7 +9,6 @@
 * If you stop the process, please clear the running logs with `rm proc/proc.log`
 
 ## Endpoints
-* `POST /exerciseDataPoint?accessPin=<>`
 * `GET /previews`
 * `GET /zettels/{zettelId}`
 
