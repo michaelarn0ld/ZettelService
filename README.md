@@ -10,7 +10,7 @@
 
 ## Setup
 Please make sure that the EC2 instance this is running on top of is configured
-for SSL: [202301030038](../202301030038) - SSL Issues Resolved
+for SSL
 
 Please make sure that the root user has the AWS credentials in `/root/.aws/credentials`
 
